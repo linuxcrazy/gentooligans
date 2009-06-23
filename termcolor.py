@@ -19,9 +19,7 @@
 
 import os
 
-
 __ALL__ = [ 'colored' ]
-
 
 ATTRIBUTES = dict(
         zip([
@@ -39,7 +37,6 @@ ATTRIBUTES = dict(
         )
 del ATTRIBUTES['']
 
-
 HIGHLIGHTS = dict(
         zip([
             'on_grey',
@@ -54,7 +51,6 @@ HIGHLIGHTS = dict(
             range(40, 48)
             )
         )
-
 
 COLORS = dict(
         zip([
@@ -71,9 +67,7 @@ COLORS = dict(
             )
         )
 
-
 RESET = '\033[0m'
-
 
 def colored(text, color=None, on_color=None, attrs=None):
     """Colorize text.
@@ -105,7 +99,6 @@ def colored(text, color=None, on_color=None, attrs=None):
 
         text += RESET
     return text
-
 
 if __name__ == '__main__':
     print 'Current terminal type: ', os.getenv('TERM')

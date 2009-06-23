@@ -12,7 +12,6 @@ from shutil import move
 from shutil import rmtree
 import gzip
 
-
 # Check if root
 def check_whoami():
     """Check if root"""
@@ -277,9 +276,7 @@ def run():
         getdata()
         grabfiles()
         show_location()
-
-
-
+# get user information, check if root, load data, login and post to web site
 check_whoami()
 
 try:
