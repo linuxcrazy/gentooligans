@@ -1,2 +1,2 @@
-Download the archive and cd to the directory created.
+You will need the module termcolor.py in the same directory as gentooligans.py.
 Then as root python gentooligans.py
