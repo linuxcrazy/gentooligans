@@ -178,16 +178,36 @@ def keywords():
         input_file = open(filename, 'rb')
         aconfig = input_file.read()
         try:
-            fname = '/tmp/package.keywords.txt'
+            fname = '/tmp/package_keywords.txt'
             fobj = open(fname, 'w')
             fobj.write(aconfig)
             fobj.close()
         finally:
             input_file.close()
     else:
-        fname = '/tmp/package.keywords.txt'
+        fname = '/tmp/package_keywords.txt'
         fobj = open(fname, 'w')
-        fobj.write('package.keywords not found')
+        fobj.write('/etc/portage/package.keywords not found')
+        fobj.close()
+
+
+def use():
+    """/etc/portage/package.use"""
+    filename = '/etc/portage/package.use'
+    if os.path.exists(filename):
+        input_file = open(filename, 'rb')
+        aconfig = input_file.read()
+        try:
+            fname = '/tmp/package_use.txt'
+            fobj = open(fname, 'w')
+            fobj.write(aconfig)
+            fobj.close()
+        finally:
+            input_file.close()
+    else:
+        fname = '/tmp/package_use.txt'
+        fobj = open(fname, 'w')
+        fobj.write('/etc/portage/package.use not found')
         fobj.close()
 
 def mask():
@@ -197,16 +217,16 @@ def mask():
         input_file = open(filename, 'rb')
         aconfig = input_file.read()
         try:
-            fname = '/tmp/package.mask.txt'
+            fname = '/tmp/package_mask.txt'
             fobj = open(fname, 'w')
             fobj.write(aconfig)
             fobj.close()
         finally:
             input_file.close()
     else:
-        fname = '/tmp/package.mask.txt'
+        fname = '/tmp/package_mask.txt'
         fobj = open(fname, 'w')
-        fobj.write('package.mask not found')
+        fobj.write('/etc/portage/package.mask not found')
         fobj.close()
 
 def unmask():
@@ -216,16 +236,35 @@ def unmask():
         input_file = open(filename, 'rb')
         aconfig = input_file.read()
         try:
-            fname = '/tmp/package.unmask.txt'
+            fname = '/tmp/package_unmask.txt'
             fobj = open(fname, 'w')
             fobj.write(aconfig)
             fobj.close()
         finally:
             input_file.close()
     else:
-        fname = '/tmp/package.unmask.txt'
+        fname = '/tmp/package_unmask.txt'
         fobj = open(fname, 'w')
-        fobj.write('package.unmask not found')
+        fobj.write('/etc/portage/package.unmask not found')
+        fobj.close()
+
+def provided():
+    """/etc/portage/package.provided"""
+    filename = '/etc/portage/package.provided'
+    if os.path.exists(filename):
+        input_file = open(filename, 'rb')
+        aconfig = input_file.read()
+        try:
+            fname = '/tmp/package_provided.txt'
+            fobj = open(fname, 'w')
+            fobj.write(aconfig)
+            fobj.close()
+        finally:
+            input_file.close()
+    else:
+        fname = '/tmp/package_provided.txt'
+        fobj = open(fname, 'w')
+        fobj.write('/etc/portage/package.provided not found')
         fobj.close()
 
 def create_date():
@@ -259,8 +298,9 @@ def grabfiles():
             'disk_report.txt', 'rc_update.txt', 'cpu_info.txt', 
             'emerge_info.txt', 'lspci.txt', 'rc.conf.txt', 
             'xorg.conf.txt', 'uptime.txt', 'kernel_config.txt', 
-            'net.txt', 'alsa_conf.txt', 'package.keywords.txt', 
-            'package.mask.txt', 'package.unmask.txt', 'lsusb.txt']
+            'net.txt', 'alsa_conf.txt', 'package_keywords.txt', 
+            'package_mask.txt', 'package_unmask.txt', 'lsusb.txt',
+            'package_use.txt', 'package_provided.txt']
     sendall(files)
 
 def getdata():
@@ -270,7 +310,7 @@ def getdata():
             'emerge_report()', 'lspci_report()', 'lsusb_report()', 
             'rcconf_report()', 'xorg_report()', 'kernel_config()', 
             'net_report()', 'alsa_config()', 'keywords()', 'mask()', 
-            'unmask()', 'create_date()']
+            'unmask()', 'provided()', 'use()', 'create_date()']
     for i in runit:
         exec i
 
@@ -334,6 +374,11 @@ try:
     rc_report_path = '/tmp/' + username + '/rc.conf.txt'
     rc_update_report_path = '/tmp/' + username + '/rc_update.txt'
     xorg_report_path = '/tmp/' + username + '/xorg.conf.txt'
+    keyword_report_path = '/tmp/' + username + '/package_keywords.txt'
+    use_report_path = '/tmp/' + username + '/package_use.txt'
+    mask_report_path = '/tmp/' + username + '/package_mask.txt'
+    unmask_report_path = '/tmp/' + username + '/package_unmask.txt'
+    provided_report_path = '/tmp/' + username + '/package_provided.txt'
 
 except KeyboardInterrupt:
     print '\nGoodbye\n'
@@ -381,6 +426,7 @@ rc_token_file = open('/tmp/rc_token_file', 'w')
 rc_update_token_file = open('/tmp/rc_update_token_file', 'w')
 xorg_token_file = open('/tmp/xorg_token_file', 'w')
 alsa_token_file = open('/tmp/alsa_token_file', 'w')
+package_token_file = open('/tmp/package_token_file', 'w')
 user_agent = 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.5) \
 Gecko/2008121718 Gentoo Firefox/3.0.5'
 login = [('name', username), ('pass', password), ('form_id', 'user_login'), ('op', 'Log in')]
@@ -413,7 +459,6 @@ hostname_node = [('title', HOSTNAME), ('changed', ''), ('form_build_id', ''),
 # Should return 302
 hostname_data = urllib.urlencode(hostname_node)
 crl.setopt(pycurl.HTTPHEADER, ["Expect:"])
-crl.setopt(pycurl.VERBOSE, 1)
 crl.setopt(pycurl.POSTFIELDS, hostname_data)
 crl.setopt(pycurl.URL, 'http://beta.gentooligans.com/node/add/gentoo-hosts')
 crl.setopt(pycurl.FILE, hosts_token_file)
@@ -430,6 +475,12 @@ proc = subprocess.Popen(
         shell=True, stdout=subprocess.PIPE,)
 os.waitpid(proc.pid, 0)
 hosts_number = proc.stdout.read().strip()
+
+print colored('Sorry for all the noise.', 'cyan')
+print
+print colored('Getting required tokens.', 'white')
+print
+print colored('OK posting to gentooligans, please wait!', 'green')
 
 # Retrieve and store token for make_conf post form
 crl.setopt(pycurl.URL, 'http://beta.gentooligans.com/node/add/gentoo-report-makeconf')
@@ -611,7 +662,6 @@ node = [('field_hostname[nid][nid]', hosts_number), ('field_portage[0][value]', 
         ('form_id', 'gentoo_report_makeconf_node_form'), ('op', 'Save')]
 node_data = urllib.urlencode(node)
 crl.setopt(pycurl.HTTPHEADER, ["Expect:"])
-crl.setopt(pycurl.VERBOSE, 1)
 crl.setopt(pycurl.POSTFIELDS, node_data)
 crl.setopt(pycurl.URL, 'http://beta.gentooligans.com/node/add/gentoo-report-makeconf')
 crl.perform()
@@ -645,7 +695,6 @@ cpu_node = [('field_hostname[nid][nid]', hosts_number), ('title', Title), ('body
         ('form_token', cpu_token), ('form_id', 'gentoo_report_cpuinfo_node_form'), ('op', 'save')]
 cpu_node_data = urllib.urlencode(cpu_node)
 crl.setopt(pycurl.HTTPHEADER, ["Expect:"])
-crl.setopt(pycurl.VERBOSE, 1)
 crl.setopt(pycurl.POSTFIELDS, cpu_node_data)
 crl.setopt(pycurl.URL, 'http://beta.gentooligans.com/node/add/gentoo-report-cpuinfo')
 crl.perform()
@@ -677,10 +726,9 @@ fstab_title = HOSTNAME + ' : ' + 'Disk Report'
 # fstab should return 302
 fstab_node = [('field_hostname[nid][nid]', hosts_number),('title', fstab_title), 
         ('body', disk_body), ('form_build_id', ''), ('form_token', fstab_token), 
-        ('form_id', 'gentoo_report_fstab_node_form'), ('op', 'save')]
+        ('form_id', 'gentoo_report_fstab_node_form'), ('op', 'Save')]
 fstab_node_data = urllib.urlencode(fstab_node)
 crl.setopt(pycurl.HTTPHEADER, ["Expect:"])
-crl.setopt(pycurl.VERBOSE, 1)
 crl.setopt(pycurl.POSTFIELDS, fstab_node_data)
 crl.setopt(pycurl.URL,
         'http://beta.gentooligans.com/node/add/gentoo-report-fstab')
@@ -707,10 +755,9 @@ net_title = HOSTNAME + ' : ' + 'Network Report'
 # net should return 302
 net_node = [('field_hostname[nid][nid]', hosts_number),('title', net_title), 
         ('body', net_body), ('form_build_id', ''), ('form_token', net_token), 
-        ('form_id', 'gentoo_report_net_node_form'), ('op', 'save')]
+        ('form_id', 'gentoo_report_net_node_form'), ('op', 'Save')]
 net_node_data = urllib.urlencode(net_node)
 crl.setopt(pycurl.HTTPHEADER, ["Expect:"])
-crl.setopt(pycurl.VERBOSE, 1)
 crl.setopt(pycurl.POSTFIELDS, net_node_data)
 crl.setopt(pycurl.URL,
         'http://beta.gentooligans.com/node/add/gentoo-report-net')
@@ -737,10 +784,9 @@ rc_title = HOSTNAME + ' : ' + 'rc.conf Report'
 # net should return 302
 rc_node = [('field_hostname[nid][nid]', hosts_number),('title', rc_title), 
         ('body', rc_body), ('form_build_id', ''), ('form_token', rc_token), 
-        ('form_id', 'gentoo_report_rc_node_form'), ('op', 'save')]
+        ('form_id', 'gentoo_report_rc_node_form'), ('op', 'Save')]
 rc_node_data = urllib.urlencode(rc_node)
 crl.setopt(pycurl.HTTPHEADER, ["Expect:"])
-crl.setopt(pycurl.VERBOSE, 1)
 crl.setopt(pycurl.POSTFIELDS, rc_node_data)
 crl.setopt(pycurl.URL,
         'http://beta.gentooligans.com/node/add/gentoo-report-rc')
@@ -767,17 +813,15 @@ rc_update_title = HOSTNAME + ' : ' + 'rc-update Report'
 # rc_update should return 302
 rc_update_node = [('field_hostname[nid][nid]', hosts_number),('title', rc_update_title), 
         ('body', rc_update_body), ('form_build_id', ''), ('form_token', rc_update_token), 
-        ('form_id', 'gentoo_report_rcupdate_node_form'), ('op', 'save')]
+        ('form_id', 'gentoo_report_rcupdate_node_form'), ('op', 'Save')]
 rc_update_node_data = urllib.urlencode(rc_update_node)
 crl.setopt(pycurl.HTTPHEADER, ["Expect:"])
-crl.setopt(pycurl.VERBOSE, 1)
 crl.setopt(pycurl.POSTFIELDS, rc_update_node_data)
 crl.setopt(pycurl.URL,
         'http://beta.gentooligans.com/node/add/gentoo-report-rcupdate')
 crl.perform()
 
 # Retrieve and store token for xorg.conf post form
-
 crl.setopt(pycurl.URL,
         'http://beta.gentooligans.com/node/add/gentoo-report-xorgconf')
 crl.setopt(pycurl.FILE, xorg_token_file)
@@ -798,13 +842,58 @@ xorg_title = HOSTNAME + ' : ' + 'xorg.conf Report'
 # xorg should return 302
 xorg_node = [('field_hostname[nid][nid]', hosts_number),('title', xorg_title), 
         ('body', xorg_body), ('form_build_id', ''), ('form_token', xorg_token), 
-        ('form_id', 'gentoo_report_xorgconf_node_form'), ('op', 'save')]
+        ('form_id', 'gentoo_report_xorgconf_node_form'), ('op', 'Save')]
 xorg_node_data = urllib.urlencode(xorg_node)
 crl.setopt(pycurl.HTTPHEADER, ["Expect:"])
-crl.setopt(pycurl.VERBOSE, 1)
 crl.setopt(pycurl.POSTFIELDS, xorg_node_data)
 crl.setopt(pycurl.URL,
         'http://beta.gentooligans.com/node/add/gentoo-report-xorgconf')
+crl.perform()
+
+# Retrieve and store token for pkg-info post form
+crl.setopt(pycurl.URL,
+        'http://beta.gentooligans.com/node/add/gentoo-report-pkg-info')
+crl.setopt(pycurl.FILE, package_token_file)
+crl.perform()
+
+# Get token from stored page
+proc = subprocess.Popen(
+        'grep edit-gentoo-report-pkg-info-node-form-form-token /tmp/package_token_file |cut -d\\" -f8', 
+        shell=True, stdout=subprocess.PIPE,)
+os.waitpid(proc.pid, 0)
+pkg_token = proc.stdout.read().strip()
+
+# Create body
+keywordfile = open(keyword_report_path, 'rb')
+usefile = open(use_report_path, 'rb')
+maskfile = open(mask_report_path, 'rb')
+unmaskfile = open(unmask_report_path, 'rb')
+providedfile = open(provided_report_path, 'rb')
+
+keyword_body = keywordfile.read()
+use_body = usefile.read()
+mask_body = maskfile.read()
+unmask_body = unmaskfile.read()
+provided_body = providedfile.read()
+
+pkg_title = HOSTNAME + ' : ' + 'pkg-info Report'
+
+# xorg should return 302
+pkg_node = [('field_hostname[nid][nid]', hosts_number), 
+        ('field_p_keywords[0][value]', keyword_body), 
+        ('field_p_use[0][value]', use_body), 
+        ('field_p_mask[0][value]', mask_body), 
+        ('field_p_unmask[0][value]', unmask_body), 
+        ('field_p_provided[0][value]', provided_body), 
+        ('form_build_id', ''), 
+        ('form_token', pkg_token), 
+        ('form_id', 'gentoo_report_pkg_info_node_form'), 
+        ('op', 'Save')]
+pkg_node_data = urllib.urlencode(pkg_node)
+crl.setopt(pycurl.HTTPHEADER, ["Expect:"])
+crl.setopt(pycurl.POSTFIELDS, pkg_node_data)
+crl.setopt(pycurl.URL,
+        'http://beta.gentooligans.com/node/add/gentoo-report-pkg-info')
 crl.perform()
 
 def alsa():
@@ -873,7 +962,6 @@ alsa_node = [('field_hostname[nid][nid]', hosts_number),('title', alsa_title),
         ('form_id', 'gentoo_report_alsa_node_form'), ('op', 'save')]
 alsa_node_data = urllib.urlencode(alsa_node)
 crl.setopt(pycurl.HTTPHEADER, ["Expect:"])
-crl.setopt(pycurl.VERBOSE, 1)
 crl.setopt(pycurl.POSTFIELDS, alsa_node_data)
 crl.setopt(pycurl.URL,
         'http://beta.gentooligans.com/node/add/gentoo-report-alsa')
@@ -899,5 +987,6 @@ rc_updatefile.close()
 xorg_token_file.close()
 xorgfile.close()
 alsa_token_file.close()
+package_token_file.close()
 
 
