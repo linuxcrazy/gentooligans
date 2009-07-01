@@ -154,7 +154,7 @@ def kernel_config():
 
 def alsa_config():
     """/etc/modules.d/alsa configuration file"""
-    filename = '/etc/modprobe.d/alsa'
+    filename = '/etc/modprobe.d/alsa.conf'
     if os.path.exists(filename):
         input_file = open(filename, 'rb')
         aconfig = input_file.read()
@@ -168,7 +168,7 @@ def alsa_config():
     else:
         fname = '/tmp/alsa_conf.txt'
         fobj = open(fname, 'w')
-        fobj.write('alsa not found')
+        fobj.write('/etc/modprobe.d/alsa.conf not found')
         fobj.close()
 
 def keywords():
@@ -209,6 +209,25 @@ def mask():
         fobj.write('package.mask not found')
         fobj.close()
 
+def unmask():
+    """/etc/portage/package.unmask"""
+    filename = '/etc/portage/package.unmask'
+    if os.path.exists(filename):
+        input_file = open(filename, 'rb')
+        aconfig = input_file.read()
+        try:
+            fname = '/tmp/package.unmask.txt'
+            fobj = open(fname, 'w')
+            fobj.write(aconfig)
+            fobj.close()
+        finally:
+            input_file.close()
+    else:
+        fname = '/tmp/package.unmask.txt'
+        fobj = open(fname, 'w')
+        fobj.write('package.unmask not found')
+        fobj.close()
+
 def create_date():
     """Add current date to bottom of report"""
     now = datetime.datetime.today()
@@ -236,13 +255,13 @@ def sendall(files):
         load_files(name)
 
 def grabfiles():
-    files=['data.txt', 'uname.txt', 'window_manager.txt', 'disk_report.txt',
-            'rc_update.txt', 'cpu_info.txt', 'emerge_info.txt', 'lspci.txt',
-            'rc.conf.txt', 'xorg.conf.txt', 'uptime.txt', 'kernel_config.txt',
-            'net.txt', 'alsa_conf.txt', 'package.keywords.txt',
-            'package.mask.txt', 'lsusb.txt']
+    files=['data.txt', 'uname.txt', 'window_manager.txt', 
+            'disk_report.txt', 'rc_update.txt', 'cpu_info.txt', 
+            'emerge_info.txt', 'lspci.txt', 'rc.conf.txt', 
+            'xorg.conf.txt', 'uptime.txt', 'kernel_config.txt', 
+            'net.txt', 'alsa_conf.txt', 'package.keywords.txt', 
+            'package.mask.txt', 'package.unmask.txt', 'lsusb.txt']
     sendall(files)
-
 
 def getdata():
     """Run all the functions from above"""
@@ -251,7 +270,7 @@ def getdata():
             'emerge_report()', 'lspci_report()', 'lsusb_report()', 
             'rcconf_report()', 'xorg_report()', 'kernel_config()', 
             'net_report()', 'alsa_config()', 'keywords()', 'mask()', 
-            'create_date()']
+            'unmask()', 'create_date()']
     for i in runit:
         exec i
 
@@ -276,6 +295,13 @@ def run():
         getdata()
         grabfiles()
         show_location()
+
+        
+###########################################################################
+################## Get Info and Post ######################################
+###########################################################################
+
+
 # get user information, check if root, load data, login and post to web site
 check_whoami()
 
@@ -354,6 +380,7 @@ net_token_file = open('/tmp/net_token_file', 'w')
 rc_token_file = open('/tmp/rc_token_file', 'w')
 rc_update_token_file = open('/tmp/rc_update_token_file', 'w')
 xorg_token_file = open('/tmp/xorg_token_file', 'w')
+alsa_token_file = open('/tmp/alsa_token_file', 'w')
 user_agent = 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.5) \
 Gecko/2008121718 Gentoo Firefox/3.0.5'
 login = [('name', username), ('pass', password), ('form_id', 'user_login'), ('op', 'Log in')]
@@ -373,11 +400,14 @@ crl.setopt(pycurl.URL, 'http://beta.gentooligans.com/node/add/gentoo-hosts')
 crl.setopt(pycurl.FILE, hosts_token_file)
 crl.perform()
 
-proc = subprocess.Popen('grep edit-gentoo-hosts-node-form-form-token /tmp/hosts_token_file |cut -d\\" -f8', shell=True, stdout=subprocess.PIPE,)
+proc = subprocess.Popen(
+        'grep edit-gentoo-hosts-node-form-form-token /tmp/hosts_token_file |cut -d\\" -f8', 
+        shell=True, stdout=subprocess.PIPE,)
 os.waitpid(proc.pid, 0)
 hosts_token = proc.stdout.read().strip()
 
-hostname_node = [('title', HOSTNAME), ('changed', ''), ('form_build_id', ''), ('form_token', hosts_token), ('form_id', 'gentoo_hosts_node_form'), ('op', 'Save')]
+hostname_node = [('title', HOSTNAME), ('changed', ''), ('form_build_id', ''), 
+        ('form_token', hosts_token), ('form_id', 'gentoo_hosts_node_form'), ('op', 'Save')]
 
 # Post Hostname, need to post hostname as final report post used HOSTNAME as Title
 # Should return 302
@@ -395,7 +425,9 @@ crl.setopt(pycurl.FILE, hosts_token_file)
 crl.perform()
 
 #  Get Hostname number from stored page
-proc = subprocess.Popen('grep "#node-" /tmp/hosts_token_file |head -n1|cut -d\- -f4', shell=True, stdout=subprocess.PIPE,)
+proc = subprocess.Popen(
+        'grep "#node-" /tmp/hosts_token_file |head -n1|cut -d\- -f4', 
+        shell=True, stdout=subprocess.PIPE,)
 os.waitpid(proc.pid, 0)
 hosts_number = proc.stdout.read().strip()
 
@@ -405,7 +437,9 @@ crl.setopt(pycurl.FILE, token_file)
 crl.perform()
 
 # Get token from stored page
-proc = subprocess.Popen('grep edit-gentoo-report-makeconf-node-form-form-token /tmp/token_file |cut -d\\" -f8', shell=True, stdout=subprocess.PIPE,)
+proc = subprocess.Popen(
+        'grep edit-gentoo-report-makeconf-node-form-form-token /tmp/token_file |cut -d\\" -f8', 
+        shell=True, stdout=subprocess.PIPE,)
 os.waitpid(proc.pid, 0)
 token = proc.stdout.read().strip()
 
@@ -463,7 +497,10 @@ fname.close()
 
 # Get data for packages fields
 
-search_terms = ['app-shells/bash:', 'dev-java/java-config:', 'dev-lang/python:', 'dev-python/pycrypto:', 'dev-util/ccache:', 'dev-util/cmake:', 'sys-apps/baselayout:', 'sys-apps/openrc:', 'sys-apps/sandbox:', 'sys-devel/autoconf:', 'sys-devel/automake:', 'sys-devel/binutils:', 'sys-devel/gcc-config:', 'sys-devel/libtool:', 'virtual/os-headers:']
+search_terms = ['app-shells/bash:', 'dev-java/java-config:', 'dev-lang/python:', 
+        'dev-python/pycrypto:', 'dev-util/ccache:', 'dev-util/cmake:', 'sys-apps/baselayout:', 
+        'sys-apps/openrc:', 'sys-apps/sandbox:', 'sys-devel/autoconf:', 'sys-devel/automake:', 
+        'sys-devel/binutils:', 'sys-devel/gcc-config:', 'sys-devel/libtool:', 'virtual/os-headers:']
 
 fname = open(report_path)
 tmp_file = '/tmp/package_list.txt'
@@ -529,7 +566,9 @@ for line in fname:
     else:
         os_headers = ''
 
-info = [bash, '\n', java, '\n', python, '\n', pycrypto, '\n', ccache, '\n', cmake, '\n', baselayout, '\n', openrc, '\n', sandbox, '\n', autoconf, '\n', automake, '\n', binutils, '\n', gcc_config, '\n', libtool, '\n', os_headers, '\n']
+info = [bash, '\n', java, '\n', python, '\n', pycrypto, '\n', ccache, '\n', 
+        cmake, '\n', baselayout, '\n', openrc, '\n', sandbox, '\n', autoconf, '\n', 
+        automake, '\n', binutils, '\n', gcc_config, '\n', libtool, '\n', os_headers, '\n']
 
 
 # Write data to tmp file
@@ -544,33 +583,10 @@ fname = open(tmp_file, 'rb')
 PACKAGES = fname.read()
 fname.close()
 
-# The next two fields were added later by likewhoa
-# They need to come from another file.
-# Emerge --info does not provide this info
-# I just left it here as dummy fields
-
-# Alsa cards
-fname = open(report_path)
-for line in fname:
-    if 'ALSA_CARDS' in line:
-        ALSA_CARDS = line.split(' ')[1]
-        break
-    else:
-        ALSA_CARDS = ''
-fname.close()
-
-# Alsa plugins
-fname = open(report_path)
-for line in fname:
-    if 'ALSA_PCM_PLUGINS' in line:
-        ALSA_PCM_PLUGINS = line.split(' ')[1]
-        break
-    else:
-        ALSA_PCM_PLUGINS = ''
-fname.close()
-
 # Loop over dict keys
-data = {'ACCEPT_KEYWORDS':None, 'CBUILD':None, 'CFLAGS':None, 'CHOST':None, 'CXXFLAGS':None, 'FEATURES':None, 'LDFLAGS':None, 'MAKEOPTS':None}
+data = {'ACCEPT_KEYWORDS':None, 'CBUILD':None, 'CFLAGS':None, 
+        'CHOST':None, 'CXXFLAGS':None, 'FEATURES':None, 
+        'LDFLAGS':None, 'MAKEOPTS':None}
 
 def get_values():
     fname = open(report_path)
@@ -791,6 +807,79 @@ crl.setopt(pycurl.URL,
         'http://beta.gentooligans.com/node/add/gentoo-report-xorgconf')
 crl.perform()
 
+def alsa():
+    alsa_report_path = '/tmp/' + username + '/alsa_conf.txt'
+    alsa_tmp_file = '/tmp/alsa_list.txt'
+    
+    #  Get ALSA_CARDS from emerge --info
+    proc = subprocess.Popen(
+            'cat /tmp/comprookie2000/emerge_info.txt | grep ALSA_CARDS= |cut -d \\" -f4', 
+            shell=True, stdout=subprocess.PIPE,)
+    os.waitpid(proc.pid, 0)
+    ALSA_CARDS = proc.stdout.read().strip()
+
+    # Get ALSA_PCM_PLUGINS from emerge --info
+    proc = subprocess.Popen(
+            'cat /tmp/comprookie2000/emerge_info.txt | grep ALSA_PCM_PLUGINS= |cut -d\\" -f6', 
+            shell=True, stdout=subprocess.PIPE,)
+    os.waitpid(proc.pid, 0)
+    ALSA_PCM_PLUGINS = proc.stdout.read().strip()
+
+    # Create body for post
+    alsafile = open(alsa_report_path, 'rb')
+    alsa_body = alsafile.read()
+    
+    # Completed body
+    alsa_info = ['ALSA_CARDS=', 
+            ALSA_CARDS, '\n', 
+            'ALSA_PCM_PLUGINS=', 
+            ALSA_PCM_PLUGINS, '\n', 
+            alsa_body]
+
+    # Write data to tmp file
+    tmp_obj = open(alsa_tmp_file, 'w')
+    for i in alsa_info:
+        tmp_obj.write(i)
+    tmp_obj.close()
+
+    # Clean up comments and blank spaces
+    proc = subprocess.Popen(
+            "sed -e '/^\##/d' -e '/^ *$/d' /tmp/alsa_list.txt", 
+            shell=True, stdout=subprocess.PIPE,)
+    os.waitpid(proc.pid, 0)
+    alsa_body = proc.stdout.read().strip()
+    return alsa_body
+
+alsa_title = HOSTNAME + ' : ' + 'Alsa Report'
+alsa_body = alsa()
+
+# Retrieve and store token for alsa post form
+
+crl.setopt(pycurl.URL,
+        'http://beta.gentooligans.com/node/add/gentoo-report-alsa')
+crl.setopt(pycurl.FILE, alsa_token_file)
+crl.perform()
+
+# Get token from stored page
+proc = subprocess.Popen(
+        'grep edit-gentoo-report-alsa-node-form-form-token /tmp/alsa_token_file |cut -d\\" -f8', 
+        shell=True, stdout=subprocess.PIPE,)
+os.waitpid(proc.pid, 0)
+alsa_token = proc.stdout.read().strip()
+
+# xorg should return 302
+alsa_node = [('field_hostname[nid][nid]', hosts_number),('title', alsa_title), 
+        ('body', alsa_body), ('form_build_id', ''), ('form_token', alsa_token), 
+        ('form_id', 'gentoo_report_alsa_node_form'), ('op', 'save')]
+alsa_node_data = urllib.urlencode(alsa_node)
+crl.setopt(pycurl.HTTPHEADER, ["Expect:"])
+crl.setopt(pycurl.VERBOSE, 1)
+crl.setopt(pycurl.POSTFIELDS, alsa_node_data)
+crl.setopt(pycurl.URL,
+        'http://beta.gentooligans.com/node/add/gentoo-report-alsa')
+crl.perform()
+
+
 # close pycurl connection
 crl.close()
 
@@ -809,5 +898,6 @@ rc_update_token_file.close()
 rc_updatefile.close()
 xorg_token_file.close()
 xorgfile.close()
+alsa_token_file.close()
 
 
